@@ -1,34 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import getAll from "./services/quotes";
+import Quote from "./components/Quote";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [quotes, setQuotes] = useState([])
+  const [randomQuote, setRandomQuote] = useState({})
+  const [status, setStatus] = useState('oneQuote')
+
+  useEffect(() => {
+    getAll().then((quotes) => { 
+      setQuotes(quotes)
+      setRandomQuote(quotes[0])
+    })
+  }, [])
+
+  const getRandomQuote = () => {
+    const i = Math.floor(Math.random() * (quotes.length - 1))
+    setRandomQuote(quotes[i])
+    setStatus('oneQuote')
+  }
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="flex flex-col min-h-screen">
+      <header className="flex justify-end">
+        <button className="flex gap-2 items-center m-9 font-medium" onClick={getRandomQuote}>
+          <p>random</p>
+          <i className="fa-solid fa-rotate"></i>
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      </header>
+      <main className="flex-grow flex flex-col justify-center">
+        <div>
+          { status === 'oneQuote' ? <Quote quote={randomQuote} changeState={() => setStatus('allAuthorQuotes')}/> : null}
+          { status === 'allAuthorQuotes' ? quotes
+            .filter((q) => q.author === randomQuote.author)
+            .map((q) => <Quote quote={q} key={quotes.indexOf(q) + 1} changeState={() => 0} />) : null}
+        </div>
+      </main>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
